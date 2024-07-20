@@ -5,10 +5,20 @@ import json
 import asyncio
 import time
 
-orchestrator_url = 'http://127.0.0.1:5001/register'
 proxy_uuid = str(uuid.uuid4())
 
+def get_host():
+    try:
+        with open("orchestrator_host.txt") as file:
+            return file.readlines()[0].strip()
+    except:
+        fetch_response = requests.get("https://raw.githubusercontent.com/JacobSteinebronn/BeatRock/main/orchestrator_host.txt")
+        return fetch_response._content.decode("utf-8").strip()
+
+
 def update_orchestrator():
+    orchestrator_url = f'http://{get_host()}/register'
+
     while True:
         try:
             rsp = requests.post(orchestrator_url, json={"proxy_uuid": proxy_uuid})
@@ -37,4 +47,4 @@ def post_handler(path):
 
 if __name__ == '__main__':
     update_orchestrator()
-    app.run(debug=True)
+    app.run(port=8080)

@@ -1,18 +1,18 @@
-from flask import Flask, request, jsonify
-import uuid
-import requests
-import json
-import asyncio
+from aiohttp import web
 
-app = Flask(__name__)
+async def handle_register(request):
+    data = await request.json()
+    print(request.__dict__)
 
-port = 5001
+    # Here, you can process the data as needed
+    print("Received data:", data)
 
-@app.route('/register', methods=['POST'])
-def post_handler():
-    data = request.get_json()
-    print(data)
-    return jsonify({}), 200
+    return web.json_response({"status": "success", "data": data})
+
+async def init_app():
+    app = web.Application()
+    app.router.add_post('/register', handle_register)
+    return app
 
 if __name__ == '__main__':
-    app.run(port=5001, debug=True)
+    web.run_app(init_app())
