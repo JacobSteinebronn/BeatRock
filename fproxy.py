@@ -46,4 +46,4 @@ def post_handler(path):
 
 if __name__ == '__main__':
     update_orchestrator()
-    app.run(port=8080)
+    app.run(port=8080, host="0.0.0.0")
