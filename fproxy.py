@@ -39,7 +39,12 @@ async def proxy_request(request):
     upstream_url = (f"https://www.whatbeatsrock.com/{path}").strip()
     headers = {"User-Agent": "@meaf, on discord"}
 
-    upstream_response = await client.post(upstream_url, json=data, headers=headers)
+    try:
+        upstream_response = await client.post(upstream_url, json=data, headers=headers, timeout=20)
+    except (httpx.ConnectError, httpx.ReadTimeout):
+        return web.Response(
+            status=503
+        )
     
     response_body = json.loads(upstream_response._content.decode("utf-8"))
     response_body["proxy_uuid"] = proxy_uuid
