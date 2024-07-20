@@ -19,7 +19,7 @@ async def wait_for_proxies():
     while True:
         if len(proxies): 
             proxy_wait_task = None
-            print("A proxy is now among us...")
+            print("A proxy is now among us...", flush=True)
             return
         if proxy_wait_task is not None: 
             try: await proxy_wait_task
@@ -73,7 +73,7 @@ async def push_proxy(uid, host):
     global proxy_wait_task
 
     if (uid, host) not in proxies:
-        print(f"Registered proxy {uid} at {host}")
+        print(f"Registered proxy {uid} at {host}", flush=True)
         proxies.append((uid, host))
     
     if proxy_wait_task is not None:
@@ -82,7 +82,7 @@ async def push_proxy(uid, host):
 
 async def delay_push_proxy(uid, host):
     await asyncio.sleep(600)
-    print(f"Re-pushing proxy {uid} {host}")
+    print(f"Re-pushing proxy {uid} {host}", flush=True)
     await push_proxy(uid, host)
 
 async def query_proxy(path, data):
@@ -92,13 +92,13 @@ async def query_proxy(path, data):
         try:
             response = await client.post(f"http://{host}:8080/{path}", json=data, timeout=20)
         except httpx.RemoteProtocolError:
-            print("Proxy didn't respond, so I'm ditching it")
+            print("Proxy didn't respond, so I'm ditching it", flush=True)
             continue
         except httpx.ConnectError:
-            print(f"Couldn't connect to proxy {host}, so I'm ditching it")
+            print(f"Couldn't connect to proxy {host}, so I'm ditching it", flush=True)
             continue
         except httpx.ReadTimeout:
-            print(f"Proxy {host} timed out, so I'm ditching it")
+            print(f"Proxy {host} timed out, so I'm ditching it", flush=True)
             continue
         except:
             sys.exit(traceback.print_exc())
@@ -106,21 +106,21 @@ async def query_proxy(path, data):
         content_json = json.loads(response._content.decode("utf-8"))
         if response.status_code == 200:
             proxies.append((uuid, host))
-            print(f"200 from {host}, {content_json['data']['guess_wins']}")
+            print(f"200 from {host}, {content_json['data']['guess_wins']}", flush=True)
             return content_json
         if response.status_code == 404:
-            print(f"404 from {uuid} {host}, dropping this proxy, {response.__dict__}")
+            print(f"404 from {uuid} {host}, dropping this proxy, {response.__dict__}", flush=True)
             continue
         if response.status_code == 418:
-            print(f"418 from {uuid} {host}, delay-queueing this proxy")
+            print(f"418 from {uuid} {host}, delay-queueing this proxy", flush=True)
             bg_tasks.append(asyncio.create_task(delay_push_proxy(uuid, host)))
         if response.status_code == 400:
             proxies.append((uuid, host))
-            print(f"400 from {host}, {content_json}")
+            print(f"400 from {host}, {content_json}", flush=True)
             return {"data": {"guess_wins": False}}
         
         # Idk what this is, so we'll just drop the proxy
-        print(response.__dict__)
+        print(response.__dict__, flush=True)
             
 async def beats(prev, guess, gid=None):
     global global_gid
@@ -130,7 +130,7 @@ async def beats(prev, guess, gid=None):
             resp_data = await query_proxy("api/vs", {"prev": prev, "guess": guess, "gid": gid})
             return resp_data["data"]["guess_wins"]
         except NoProxyException:
-            print("We ran out of proxies, so I'll wait for some to pull up")
+            print("We ran out of proxies, so I'll wait for some to pull up", flush=True)
             await wait_for_proxies()
 
 async def restart_and_resume():
@@ -140,17 +140,17 @@ async def restart_and_resume():
     win_2 = await beats(str(first), str(second))
 
 async def background_task():
-    print("Starting up, waiting for proxies")
+    print("Starting up, waiting for proxies", flush=True)
     await wait_for_proxies()
-    print("Got proxies!")
+    print("Got proxies!", flush=True)
     await restart_and_resume()
-    print("Starting event loop")
+    print("Starting event loop", flush=True)
     while True:
         # We have an active game and we just beat the last guy
         nxt = state.gen_next()
         if await beats(str(state.chain[-1]), str(nxt)):
             state.append(nxt)
-            print(f"{nxt.name} makes {len(state.chain)}")
+            print(f"{nxt.name} makes {len(state.chain)}", flush=True)
             continue
         else:
             await restart_and_resume()
