@@ -81,10 +81,10 @@ def push_proxy(host, silent=True):
         proxy_wait_task.cancel()
         proxy_wait_task = None
 
-async def delay_push_proxy(uid, host):
+async def delay_push_proxy(host):
     await asyncio.sleep(600)
-    print(f"Re-pushing proxy {uid} {host}", flush=True)
-    await push_proxy(uid, host)
+    print(f"Re-pushing proxy {host}", flush=True)
+    push_proxy(host)
 
 async def query_with_hard_timeout(url, json, timeout=20):
     ctask = asyncio.create_task(asyncio.sleep(timeout))
