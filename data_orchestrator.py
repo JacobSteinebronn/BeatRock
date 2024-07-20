@@ -72,8 +72,10 @@ class NoProxyException(Exception):
 async def push_proxy(uid, host):
     global proxy_wait_task
 
-    print(f"Registered proxy {uid} at {host}")
-    proxies.append((uid, host))
+    if (uid, host) not in proxies:
+        print(f"Registered proxy {uid} at {host}")
+        proxies.append((uid, host))
+    
     if proxy_wait_task is not None:
         proxy_wait_task.cancel()
         proxy_wait_task = None
@@ -92,6 +94,9 @@ async def query_proxy(path, data):
         except httpx.RemoteProtocolError:
             print("Proxy didn't respond, so I'm ditching it")
             continue
+        except httpx.ConnectError:
+            print(f"Couldn't connect to proxy {host}, so I'm ditching it")
+            continue
         except:
             sys.exit(traceback.print_exc())
 
@@ -99,7 +104,7 @@ async def query_proxy(path, data):
             proxies.append((uuid, host))
             return json.loads(response._content.decode("utf-8"))
         if response.status_code == 404:
-            print(f"404 from {uuid} {host}, dropping this proxy")
+            print(f"404 from {uuid} {host}, dropping this proxy, {response.__dict__}")
             continue
         if response.status_code == 418:
             print(f"418 from {uuid} {host}, delay-queueing this proxy")
@@ -169,4 +174,4 @@ async def stop_background_task(app):
     except asyncio.CancelledError: pass
 
 if __name__ == '__main__':
-    web.run_app(init_app())
+    web.run_app(init_app(), port=8080)
