@@ -91,7 +91,7 @@ async def query_proxy(path, data):
         if len(proxies) == 0: raise NoProxyException()  # TODO: Handle this in main() by just sleeping for a while
         uuid, host = proxies.pop(0)
         try:
-            print(f"[{datetime.now()}]Querying {host}", flush=True)
+            print(f"[{datetime.datetime.now()}]Querying {host}", flush=True)
             response = await client.post(f"http://{host}:8080/{path}", json=data, timeout=20)
         except httpx.RemoteProtocolError:
             print("Proxy didn't respond, so I'm ditching it", flush=True)
