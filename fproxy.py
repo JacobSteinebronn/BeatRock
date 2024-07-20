@@ -26,7 +26,7 @@ async def update_orchestrator():
             rsp = await client.post(orchestrator_url, json={"proxy_uuid": proxy_uuid})
             if rsp.status_code == 200: 
                 print("Successfully (re-)registered!")
-                delay = 600 # We succeeded to register, so we can probably just chill
+                delay = 60 # We succeeded to register, so we can probably just chill
         except httpx.ConnectError:
             print("Didn't register...")
             delay = 10 # We didn't register, so we should try again soon
