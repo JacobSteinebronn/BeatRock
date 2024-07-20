@@ -103,15 +103,21 @@ async def query_proxy(path, data):
         except:
             sys.exit(traceback.print_exc())
 
+        content_json = json.loads(response._content.decode("utf-8"))
         if response.status_code == 200:
             proxies.append((uuid, host))
-            return json.loads(response._content.decode("utf-8"))
+            print(f"200 from {host}, {content_json['data']['guess_wins']}")
+            return content_json
         if response.status_code == 404:
             print(f"404 from {uuid} {host}, dropping this proxy, {response.__dict__}")
             continue
         if response.status_code == 418:
             print(f"418 from {uuid} {host}, delay-queueing this proxy")
             bg_tasks.append(asyncio.create_task(delay_push_proxy(uuid, host)))
+        if response.status_code == 400:
+            proxies.append((uuid, host))
+            print(f"400 from {host}, {content_json}")
+            return {"data": {"guess_wins": False}}
         
         # Idk what this is, so we'll just drop the proxy
         print(response.__dict__)
@@ -142,10 +148,8 @@ async def background_task():
     while True:
         # We have an active game and we just beat the last guy
         nxt = state.gen_next()
-        print("Attempting", str(nxt))
         if await beats(str(state.chain[-1]), str(nxt)):
             state.append(nxt)
-            print(len(state.chain))
             continue
         else:
             await restart_and_resume()
