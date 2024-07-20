@@ -134,6 +134,7 @@ async def query_proxy(path, data):
             continue
         if response.status_code == 418:
             bg_tasks.append(asyncio.create_task(delay_push_proxy(host)))
+            print(f"418: {content_json}", flush=True)
             print(f"418 from {host}, delay-queueing this proxy", flush=True)
             continue
         if response.status_code == 400:
