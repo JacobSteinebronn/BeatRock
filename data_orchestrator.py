@@ -166,7 +166,9 @@ async def restart_and_resume():
     print(f"Restart/Resume, {global_gid}")
     first, second = state.get_resumers()
     win_1 = await beats("rock", str(first))
+    print(f"Resume {win_1}")
     win_2 = await beats(str(first), str(second))
+    print(f"Resume {win_2}")
 
 async def background_task():
     try:
