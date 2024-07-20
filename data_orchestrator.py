@@ -162,13 +162,12 @@ async def beats(prev, guess, gid=None):
             await wait_for_proxies()
 
 async def restart_and_resume():
+    global global_gid
     global_gid = str(uuid.uuid4())
     print(f"Restart/Resume, {global_gid}")
     first, second = state.get_resumers()
     win_1 = await beats("rock", str(first))
-    print(f"Resume {win_1}")
     win_2 = await beats(str(first), str(second))
-    print(f"Resume {win_2}")
 
 async def background_task():
     try:
