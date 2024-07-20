@@ -8,15 +8,11 @@ class God:
         self.targ = targ
     
     def __str__(self):
-        if self.targ == "__NOTHING":
-            return f"A person named {self.name} who breaks rocks"
+        if self.targ == "__NOTHING": return f"A person named {self.name} who breaks rocks"
         return f"A person named {self.name} who is stronger, smarter, and faster than {self.targ}"
-    
-    def to_json(self):
-        return {
-            "name": self.name,
-            "targ": self.targ,
-        }
+
+    def to_json(self): return {"name": self.name, "targ": self.targ}
+    def to_compact(str): return f"{self.name}>{self.targ}"
 
 global_uid = str(uuid.uuid1())
 alpha = "abcdefghijklmnopqrstuvwxyz"
@@ -58,7 +54,9 @@ def submit_initials(prev, guess, initials, score, uid=None):
         return True
     raise Exception(f"{response.__dict__}\n\nError {code}: \n{response._content.decode('utf-8')}")
 
-print(beats("rock", "paper"))
+# print(beats("rock", "paper"))
+for i in range(1, len(chain)):
+    print(beats(chain[i-1], chain[i]))
 exit(0)
 # print(beats("paper", "papers"))
 # print(submit_initials("paper", "papers", "JAS", 1))
