@@ -70,7 +70,7 @@ state = State()
 class NoProxyException(Exception):
     pass
 
-async def push_proxy(host, silent=True):
+def push_proxy(host, silent=True):
     global proxy_wait_task
 
     if host not in proxies:
@@ -193,7 +193,7 @@ async def handle_register(request):
 
     proxy_host, _ = request._transport_peername
     proxy_uuid = data["proxy_uuid"]
-    await push_proxy(proxy_host, silent=False)
+    push_proxy(proxy_host, silent=False)
 
     return web.json_response({"status": "success", "data": data})
 
