@@ -58,7 +58,8 @@ def submit_initials(prev, guess, initials, score, uid=None):
         return True
     raise Exception(f"{response.__dict__}\n\nError {code}: \n{response._content.decode('utf-8')}")
 
-# print(beats("rock", "paper"))
+print(beats("rock", "paper"))
+exit(0)
 # print(beats("paper", "papers"))
 # print(submit_initials("paper", "papers", "JAS", 1))
 
