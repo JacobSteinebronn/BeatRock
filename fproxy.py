@@ -2,7 +2,6 @@ from flask import Flask, request, jsonify
 import uuid
 import requests
 import json
-import asyncio
 import time
 
 proxy_uuid = str(uuid.uuid4())
