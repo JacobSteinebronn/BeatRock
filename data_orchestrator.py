@@ -119,7 +119,12 @@ async def query_proxy(path, data):
             print("Dammit!")
             sys.exit(traceback.print_exc())
 
-        content_json = json.loads(response._content.decode("utf-8"))
+        try:
+            content_json = json.loads(response._content.decode("utf-8"))
+        except json.JSONDecodeError:
+            print(f"Couldn't parse the response from {host}, which means the game and proxy are dead")
+            return None
+
         if response.status_code == 200:
             proxies.append(host)
             print(f"200 from {host}, {content_json['data']['guess_wins']}", flush=True)
@@ -134,11 +139,11 @@ async def query_proxy(path, data):
         if response.status_code == 400:
             proxies.append(host)
             print(f"400 from {host}, {content_json}", flush=True)
-            return {"data": {"guess_wins": False}}
+            return None
         if response.status_code == 503:
             proxies.append(host)
             print(f"503 from {host}, which means our game is dead but the proxy is fine", flush=True)
-            return {"data": {"guess_wins": False}}
+            return None
 
         
         # Idk what this is, so we'll just drop the proxy
@@ -150,6 +155,7 @@ async def beats(prev, guess, gid=None):
     while True:
         try:
             resp_data = await query_proxy("api/vs", {"prev": prev, "guess": guess, "gid": gid})
+            if resp_data is None: return False
             return resp_data["data"]["guess_wins"]
         except NoProxyException:
             print("We ran out of proxies, so I'll wait for some to pull up", flush=True)
@@ -162,21 +168,25 @@ async def restart_and_resume():
     win_2 = await beats(str(first), str(second))
 
 async def background_task():
-    print("Starting up, waiting for proxies", flush=True)
-    await wait_for_proxies()
-    print("Got proxies!", flush=True)
-    await restart_and_resume()
-    print("Starting event loop", flush=True)
-    while True:
-        # We have an active game and we just beat the last guy
-        nxt = state.gen_next()
-        if await beats(str(state.chain[-1]), str(nxt)):
-            state.append(nxt)
-            print(f"{nxt.name} makes {len(state.chain)}", flush=True)
-            continue
-        else:
-            await restart_and_resume()
-            continue
+    try:
+        print("Starting up, waiting for proxies", flush=True)
+        await wait_for_proxies()
+        print("Got proxies!", flush=True)
+        await restart_and_resume()
+        print("Starting event loop", flush=True)
+        while True:
+            # We have an active game and we just beat the last guy
+            nxt = state.gen_next()
+            if await beats(str(state.chain[-1]), str(nxt)):
+                state.append(nxt)
+                print(f"{nxt.name} makes {len(state.chain)}", flush=True)
+                continue
+            else:
+                await restart_and_resume()
+                continue
+    except:
+        print("Come on!")
+        sys.exit(traceback.print_exc())
 
 async def handle_register(request):
     data = await request.json()
@@ -204,4 +214,4 @@ async def stop_background_task(app):
     except asyncio.CancelledError: pass
 
 if __name__ == '__main__':
-    web.run_app(init_app(), port=8080)
+    web.run_app(init_app(), port=8081)
