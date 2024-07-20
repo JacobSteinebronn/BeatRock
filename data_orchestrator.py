@@ -163,6 +163,7 @@ async def beats(prev, guess, gid=None):
 
 async def restart_and_resume():
     global_gid = str(uuid.uuid4())
+    print(f"Restart/Resume, {global_gid}")
     first, second = state.get_resumers()
     win_1 = await beats("rock", str(first))
     win_2 = await beats(str(first), str(second))
