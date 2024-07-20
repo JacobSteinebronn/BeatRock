@@ -58,7 +58,7 @@ class State:
         self.compacts.add(god.to_compact())
         self.chain.append(god)
         with open("data_gods.json", "w") as file:
-            json.dump({"chain": [g.to_json() for g in self.chain]}, file)
+            json.dump({"chain": [g.to_json() for g in self.chain]}, file, indent=2)
 
     def get_resumers(self):
         last = self.chain[-1]
