@@ -150,6 +150,7 @@ async def background_task():
         nxt = state.gen_next()
         if await beats(str(state.chain[-1]), str(nxt)):
             state.append(nxt)
+            print(f"{nxt.name} makes {len(state.chain)}")
             continue
         else:
             await restart_and_resume()
