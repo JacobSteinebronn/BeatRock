@@ -70,11 +70,11 @@ state = State()
 class NoProxyException(Exception):
     pass
 
-async def push_proxy(host):
+async def push_proxy(host, silent=True):
     global proxy_wait_task
 
     if host not in proxies:
-        print(f"Registered proxy at {host}", flush=True)
+        if not silent: print(f"Registered proxy at {host}", flush=True)
         proxies.append(host)
     
     if proxy_wait_task is not None:
@@ -126,7 +126,7 @@ async def query_proxy(path, data):
             return None
 
         if response.status_code == 200:
-            proxies.append(host)
+            push_proxy(host)
             print(f"200 from {host}, {content_json['data']['guess_wins']}", flush=True)
             return content_json
         if response.status_code == 404:
@@ -137,11 +137,11 @@ async def query_proxy(path, data):
             print(f"418 from {host}, delay-queueing this proxy", flush=True)
             continue
         if response.status_code == 400:
-            proxies.append(host)
+            push_proxy(host)
             print(f"400 from {host}, {content_json}", flush=True)
             return None
         if response.status_code == 503:
-            proxies.append(host)
+            push_proxy(host)
             print(f"503 from {host}, which means our game is dead but the proxy is fine", flush=True)
             return None
 
@@ -193,7 +193,7 @@ async def handle_register(request):
 
     proxy_host, _ = request._transport_peername
     proxy_uuid = data["proxy_uuid"]
-    await push_proxy(proxy_host)
+    await push_proxy(proxy_host, silent=False)
 
     return web.json_response({"status": "success", "data": data})
 
