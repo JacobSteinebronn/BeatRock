@@ -103,6 +103,7 @@ async def query_proxy(path, data):
             print(f"Proxy {host} timed out, so I'm ditching it", flush=True)
             continue
         except:
+            print("Dammit!")
             sys.exit(traceback.print_exc())
 
         content_json = json.loads(response._content.decode("utf-8"))
