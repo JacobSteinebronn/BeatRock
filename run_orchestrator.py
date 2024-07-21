@@ -184,7 +184,7 @@ async def background_task():
         await wait_for_proxies()
         print("Got proxies!", flush=True)
         cur_score = 0
-        targ_score = 10
+        targ_score = 11500
         print("Starting event loop", flush=True)
         cur_str = "rock"
         for i in range(len(state.chain)):
