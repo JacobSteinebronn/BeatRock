@@ -12,7 +12,7 @@ proxies = []
 client = httpx.AsyncClient()
 bg_tasks = []  # I don't think we'll ever really use these
 global_gid = str(uuid.uuid4())
-
+delayed_proxies = set()
 proxy_wait_task = None
 
 async def wait_for_proxies():
@@ -73,7 +73,7 @@ class NoProxyException(Exception):
 def push_proxy(host, silent=True):
     global proxy_wait_task
 
-    if host not in proxies:
+    if host not in proxies and host not in delayed_proxies:
         if not silent: print(f"Registered proxy at {host}", flush=True)
         proxies.append(host)
     
@@ -82,8 +82,10 @@ def push_proxy(host, silent=True):
         proxy_wait_task = None
 
 async def delay_push_proxy(host):
+    delayed_proxies.add(host)
     await asyncio.sleep(600)
     print(f"Re-pushing proxy {host}", flush=True)
+    delayed_proxies.remove(host)
     push_proxy(host)
 
 async def query_with_hard_timeout(url, json, timeout=20):
@@ -101,7 +103,7 @@ async def query_proxy(path, data):
         if len(proxies) == 0: raise NoProxyException()  # TODO: Handle this in main() by just sleeping for a while
         host = proxies.pop(0)
         try:
-            print(f"[{datetime.datetime.now()}]Querying {host}", flush=True)
+            # print(f"[{datetime.datetime.now()}]Querying {host}", flush=True)
             response = await query_with_hard_timeout(f"http://{host}:8080/{path}", json=data, timeout=20)
             if response is None:
                 print(f"Proxy {host} hit the hard timeout, so I'm ditching it", flush=True)
@@ -127,23 +129,23 @@ async def query_proxy(path, data):
 
         if response.status_code == 200:
             push_proxy(host)
-            print(f"200 from {host}, {content_json['data']['guess_wins']}", flush=True)
+            print(f"[{datetime.datetime.now()}][{len(proxies)}]200 from {host}, {content_json['data']['guess_wins']}", flush=True)
             return content_json
         if response.status_code == 404:
-            print(f"404 from {host}, dropping this proxy, {response.__dict__}", flush=True)
+            print(f"[{datetime.datetime.now()}][{len(proxies)}]404 from {host}, dropping this proxy, {response.__dict__}", flush=True)
             continue
         if response.status_code == 418:
             bg_tasks.append(asyncio.create_task(delay_push_proxy(host)))
-            print(f"418: {content_json}", flush=True)
-            print(f"418 from {host}, delay-queueing this proxy", flush=True)
+            # print(f"418: {content_json}", flush=True)
+            print(f"[{datetime.datetime.now()}][{len(proxies)}]418 from {host}, delay-queueing this proxy", flush=True)
             continue
         if response.status_code == 400:
             push_proxy(host)
-            print(f"400 from {host}, {content_json}", flush=True)
+            print(f"[{datetime.datetime.now()}][{len(proxies)}]400 from {host}, {content_json}", flush=True)
             return None
         if response.status_code == 503:
             push_proxy(host)
-            print(f"503 from {host}, which means our game is dead but the proxy is fine", flush=True)
+            print(f"[{datetime.datetime.now()}][{len(proxies)}]503 from {host}, which means our game is dead but the proxy is fine", flush=True)
             return None
 
         
