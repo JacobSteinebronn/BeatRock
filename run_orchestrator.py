@@ -12,7 +12,7 @@ proxies = []
 client = httpx.AsyncClient()
 bg_tasks = []  # I don't think we'll ever really use these
 global_gid = str(uuid.uuid4())
-
+delayed_proxies = set()
 proxy_wait_task = None
 
 async def wait_for_proxies():
@@ -73,7 +73,7 @@ class NoProxyException(Exception):
 def push_proxy(host, silent=True):
     global proxy_wait_task
 
-    if host not in proxies:
+    if host not in proxies and host not in delayed_proxies:
         if not silent: print(f"Registered proxy at {host}", flush=True)
         proxies.append(host)
     
@@ -82,8 +82,10 @@ def push_proxy(host, silent=True):
         proxy_wait_task = None
 
 async def delay_push_proxy(host):
+    delayed_proxies.add(host)
     await asyncio.sleep(600)
     print(f"Re-pushing proxy {host}", flush=True)
+    delayed_proxies.add(remove)
     push_proxy(host)
 
 async def query_with_hard_timeout(url, json, timeout=20):
