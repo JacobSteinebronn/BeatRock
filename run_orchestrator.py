@@ -103,7 +103,6 @@ async def query_proxy(path, data):
         if len(proxies) == 0: raise NoProxyException()  # TODO: Handle this in main() by just sleeping for a while
         host = proxies.pop(0)
         try:
-            print(f"[{datetime.datetime.now()}]Querying {host}", flush=True)
             response = await query_with_hard_timeout(f"http://{host}:8080/{path}", json=data, timeout=20)
             if response is None:
                 print(f"Proxy {host} hit the hard timeout, so I'm ditching it", flush=True)
@@ -129,19 +128,18 @@ async def query_proxy(path, data):
 
         if response.status_code == 200:
             push_proxy(host)
-            print(f"200 from {host}, {content_json['data']['guess_wins']}", flush=True)
+            print(f"[{len(proxies)}][{len(delayed_proxies)}]200 from {host}, {content_json['data']['guess_wins']}", flush=True)
             return content_json
         if response.status_code == 404:
-            print(f"404 from {host}, dropping this proxy, {response.__dict__}", flush=True)
+            print(f"[{len(proxies)}][{len(delayed_proxies)}]404 from {host}, dropping this proxy, {response.__dict__}", flush=True)
             continue
         if response.status_code == 418:
             bg_tasks.append(asyncio.create_task(delay_push_proxy(host)))
-            print(f"418: {content_json}", flush=True)
-            print(f"418 from {host}, delay-queueing this proxy", flush=True)
+            print(f"[{len(proxies)}][{len(delayed_proxies)}]418 from {host}, delay-queueing this proxy", flush=True)
             continue
         if response.status_code == 400:
             push_proxy(host)
-            print(f"400 from {host}, {content_json}", flush=True)
+            print(f"[{len(proxies)}][{len(delayed_proxies)}]400 from {host}, {content_json}", flush=True)
             return None
         if response.status_code == 503:
             push_proxy(host)
