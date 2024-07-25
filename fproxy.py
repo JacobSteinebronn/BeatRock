@@ -19,7 +19,7 @@ async def get_host():
 # Learn where the orchestrator is, and keep registering with it
 async def update_orchestrator():
     print("Letting the server warm up...")
-    await asyncio.sleep(5)
+    await asyncio.sleep(2)
     while True:
         orchestrator_url = f'http://{await get_host()}/register'
         try:
@@ -38,6 +38,8 @@ async def proxy_request(request):
     data = await request.json()
     upstream_url = (f"https://www.whatbeatsrock.com/{path}").strip()
     headers = {"User-Agent": "@meaf, on discord"}
+    if "Cookie" in request.headers:
+        headers["Cookie"] = request.headers["Cookie"]
 
     try:
         upstream_response = await client.post(upstream_url, json=data, headers=headers, timeout=20)

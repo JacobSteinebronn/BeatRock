@@ -1,3 +1,43 @@
+# from aiohttp import web
+# import asyncio
+# import httpx
+# import uuid
+# import json
+# import random
+# import traceback
+# import sys
+# import datetime
+# import requests
+
+
+# gid = "a8b0fe39-380e-4127-9dbd-74236a63c319"
+
+# die_data = {
+#     "prev": "paper",
+#     "guess": "fire",
+#     "gid": gid,
+# }
+
+# headers = {
+#     "User-Agent": "@meaf, on discord",
+#     # "Cookie": cookie,
+# }
+
+# response = requests.post("https://www.whatbeatsrock.com/api/vs", headers=headers, json=die_data)
+
+# print(response.status_code)
+# print(response._content.decode("utf-8"))
+# exit(0)
+# submit_data = {
+#     "gid": gid,
+#     "score": targ_score,
+#     "text": f"{banner} 🐶👋 did not beat {thanos} 💪😈",
+# }
+# response = requests.post("https://www.whatbeatsrock.com/api/scores", headers=headers, json=submit_data)
+
+# print(response.status_code)
+# print(response._content.decode("utf-8"))
+
 from aiohttp import web
 import asyncio
 import httpx
@@ -11,9 +51,14 @@ import datetime
 proxies = []
 client = httpx.AsyncClient()
 bg_tasks = []  # I don't think we'll ever really use these
-global_gid = str(uuid.uuid4())
+global_gid = "eeb43e79-8a41-402a-9ef1-8a879ad6b379"
 delayed_proxies = set()
 proxy_wait_task = None
+cookie = "cf_clearance=Ag7CoHnaQKjqK1X_MmvVihqH47X79Skz.yIDdpVP01c-1721841973-1.0.1.1-4SIjwn1_xRSnFmUR14hpe2WVjqDiHylXShrfhjCuiqAnPFs962fcDss9w9w_juJETkW3Ofxr1gS739h4eFoyrw; sb-xrrlbpmfxuxumxqbccxz-auth-token=%5B%22eyJhbGciOiJIUzI1NiIsImtpZCI6IjB3Q3RxNnJ0NmpGSWs3TWEiLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiJodHRwczovL3hycmxicG1meHV4dW14cWJjY3h6LnN1cGFiYXNlLmNvL2F1dGgvdjEiLCJzdWIiOiJiZGU5ZWY5Yy02YjQ2LTQwYmEtODYxMy0zNzQ4MzcwZDU1NmYiLCJhdWQiOiJhdXRoZW50aWNhdGVkIiwiZXhwIjoxNzIxOTI4MDc2LCJpYXQiOjE3MjE5MjQ0NzYsImVtYWlsIjoiamFrZXN0ZWluZWJyb25uQGdtYWlsLmNvbSIsInBob25lIjoiIiwiYXBwX21ldGFkYXRhIjp7InByb3ZpZGVyIjoiZGlzY29yZCIsInByb3ZpZGVycyI6WyJkaXNjb3JkIl19LCJ1c2VyX21ldGFkYXRhIjp7ImF2YXRhcl91cmwiOiJodHRwczovL2Nkbi5kaXNjb3JkYXBwLmNvbS9hdmF0YXJzLzI2Nzc3NTUxNDY0MTU2MzY1MC9iNjg0NjdkYzBhOWQ5NWMwMTllMDUyOGFkMmZhOTM2Ny5wbmciLCJjdXN0b21fY2xhaW1zIjp7Imdsb2JhbF9uYW1lIjoiTWVhZiJ9LCJlbWFpbCI6Impha2VzdGVpbmVicm9ubkBnbWFpbC5jb20iLCJlbWFpbF92ZXJpZmllZCI6dHJ1ZSwiZnVsbF9uYW1lIjoibWVhZiIsImlzcyI6Imh0dHBzOi8vZGlzY29yZC5jb20vYXBpIiwibmFtZSI6Im1lYWYjMCIsInBob25lX3ZlcmlmaWVkIjpmYWxzZSwicGljdHVyZSI6Imh0dHBzOi8vY2RuLmRpc2NvcmRhcHAuY29tL2F2YXRhcnMvMjY3Nzc1NTE0NjQxNTYzNjUwL2I2ODQ2N2RjMGE5ZDk1YzAxOWUwNTI4YWQyZmE5MzY3LnBuZyIsInByb3ZpZGVyX2lkIjoiMjY3Nzc1NTE0NjQxNTYzNjUwIiwic3ViIjoiMjY3Nzc1NTE0NjQxNTYzNjUwIn0sInJvbGUiOiJhdXRoZW50aWNhdGVkIiwiYWFsIjoiYWFsMSIsImFtciI6W3sibWV0aG9kIjoib2F1dGgiLCJ0aW1lc3RhbXAiOjE3MjE4NDMzNzV9XSwic2Vzc2lvbl9pZCI6Ijg3ZTFmZDRiLWRlNDUtNDUyMi1hZGFiLWVhNmU3MGNhNjhiMCIsImlzX2Fub255bW91cyI6ZmFsc2V9.fLsV-P2FXK7AW1kIFtn9G6N92NmMvrkBvSK5juzvVHA%22%2C%22ZErGC2A6w7OSXX6KfQVRIA%22%2Cnull%2Cnull%2Cnull%5D"
+
+thanos = "Thanos with a full infinity gauntlet"
+banner = "Hi there! It's me, @meaf :)"
+targ_score = 25
 
 async def wait_for_proxies():
     global proxy_wait_task
@@ -164,54 +209,28 @@ async def beats(prev, guess, gid=None):
             print("We ran out of proxies, so I'll wait for some to pull up", flush=True)
             await wait_for_proxies()
 
-async def submit_initials(prev, guess, initials, score, gid=None):
+async def submit_initials(prev, guess, score, gid=None):
     if gid is None: gid = global_gid
     url = "https://www.whatbeatsrock.com/api/scores"
     headers = {
         "User-Agent": "@meaf, on discord",
+        "Cookie": cookie,
     }
-    data = {"initials":initials,"score":score,"gid":gid, "text": f'{guess} 🐶👋 did not beat {prev} 💪😈'}
+    data = {"score":score,"gid":gid, "text": f'{guess} 🐶👋 did not beat {prev} 💪😈'}
 
     response = await client.post(url, headers=headers, json=data)
     code = response.status_code
     if code == 200: return True
     raise Exception(f"{response.__dict__}\n\nError {code}: \n{response._content.decode('utf-8')}")
 
-thanos = "Thanos with a full infinity gauntlet"
-banner = "Hi there! It's me, @meaf :)"
-
 async def background_task():
     try:
         print("Starting up, waiting for proxies", flush=True)
         await wait_for_proxies()
         print("Got proxies!", flush=True)
-        cur_score = 0
-        targ_score = 100000
         print("Starting event loop", flush=True)
-        cur_str = "rock"
-        for i in range(len(state.chain)):
-            if i % 20 == 0: print(global_gid)
-            if i + 1 == targ_score:
-                print(f"Closing in! {global_gid}")
-                if not await beats(cur_str, thanos):
-                    print("Didn't win with thanos, really?")
-                    exit(0)
-                
-                lines = []
-                lines.append(f"We got our last point by winning with thanos")
-                lines.append(f"Gid: {global_gid}")
-                lines.append(f"Score: {targ_score}")
-                
-                with open("./win_data", "w") as file:
-                    file.write("\n".join(lines))
-                for line in lines:
-                    print(line, flush=True)
-                exit(0)
-                
-            assert await beats(cur_str, str(state.chain[i])), "Failed something shoulda been cached"
-            cur_score += 1
-            cur_str = str(state.chain[i])
-            print(f"{cur_score} {cur_str}")
+        print(await beats(thanos, banner))
+        print(await submit_initials(thanos, banner, targ_score))
 
                 
                 
