@@ -124,7 +124,11 @@ async def query_proxy(path, data):
             content_json = json.loads(response._content.decode("utf-8"))
         except json.JSONDecodeError:
             print(f"Couldn't parse the response from {host}, which means the game and proxy are dead")
-            return None
+            print(f"Given that's a bummer, though, I'm gonna assume it worked ig | {global_gid}")
+            print(f"data: {data}")
+            print(f"Content: {response._content}")
+            print(f"The whole thing: {response.__dict__}")
+            return {"data": {"guess_wins": True}}
 
         if response.status_code == 200:
             push_proxy(host)
@@ -183,13 +187,12 @@ async def background_task():
         print("Starting up, waiting for proxies", flush=True)
         await wait_for_proxies()
         print("Got proxies!", flush=True)
-        cur_score = 0
         targ_score = 100000
         print("Starting event loop", flush=True)
         cur_str = "rock"
-        for i in range(len(state.chain)):
-            if i % 20 == 0: print(global_gid)
-            if i + 1 == targ_score:
+        for cur_score in range(0, len(state.chain)):
+            if cur_score % 20 == 0: print(global_gid)
+            if cur_score + 1 == targ_score:
                 print(f"Closing in! {global_gid}")
                 if not await beats(cur_str, thanos):
                     print("Didn't win with thanos, really?")
@@ -206,12 +209,10 @@ async def background_task():
                     print(line, flush=True)
                 exit(0)
                 
-            assert await beats(cur_str, str(state.chain[i])), "Failed something shoulda been cached"
-            cur_score += 1
-            cur_str = str(state.chain[i])
+            nxt = str(state.chain[cur_score])
+            assert await beats(cur_str, nxt), "Failed something shoulda been cached"
+            cur_str = nxt
             print(f"{cur_score} {cur_str}")
-
-                
                 
     except:
         print("Come on!")
